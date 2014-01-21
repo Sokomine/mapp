@@ -1,8 +1,33 @@
+
+FACTOR     = 8;
+MAX_FACTOR = 128; -- the bigger, the more graphical glitches you get
+MIN_FACTOR = 1;
+
+SIZE_FULL  = 2*FACTOR; --32
+SIZE_HALF  = math.ceil(SIZE_FULL/2)+1;
+DRAW_SIZE1 = 4.2/FACTOR; --0.15;
+DRAW_SIZE2 = 6.4/FACTOR;
+
 minetest.register_tool("mapp:map", {
 	description = "map",
 	inventory_image = "map_block.png",
 	on_use = function(itemstack, user, pointed_thing)
 	map_handler(itemstack,user,pointed_thing)
+	end,
+	on_place = function(itemstack, placer, pointed_thing)
+
+		FACTOR     = FACTOR*2;
+		if( FACTOR >= MAX_FACTOR ) then
+			FACTOR = MIN_FACTOR;
+		end
+
+		SIZE_FULL  = 2*FACTOR; --32
+		SIZE_HALF  = math.ceil(SIZE_FULL/2)+1;
+		DRAW_SIZE1 = 4.2/FACTOR; --0.15;
+		DRAW_SIZE2 = 6.4/FACTOR;
+
+		minetest.chat_send_player( placer:get_player_name(),
+			'Info: Map resolution set to '..tostring( SIZE_FULL )..'x'..tostring( SIZE_FULL )..'.');	
 	end,
 })
 function map_handler (itemstack, user, pointed_thing)
@@ -42,10 +67,10 @@ function map_handler (itemstack, user, pointed_thing)
 		local env = minetest.env
 		local registered_nodes = minetest.registered_nodes
 
-		for i = -17,17,1 do
-			mapar[i+17] = {}
-			for j = -17,17,1 do
-				mapar[i+17][j+17] = {}
+		for i = (-1*SIZE_HALF),SIZE_HALF,1 do
+			mapar[i+SIZE_HALF] = {}
+			for j = (-1*SIZE_HALF),SIZE_HALF,1 do
+				mapar[i+SIZE_HALF][j+SIZE_HALF] = {}
 				po.x, po.y, po.z = pos.x+i, pos.y, pos.z+j
 				local no = env:get_node(po)
 				local k=po.y
@@ -76,8 +101,8 @@ function map_handler (itemstack, user, pointed_thing)
 				if type(tile)=="table" then
 				  tile=tile["name"]
 				end
-				mapar[i+17][j+17].y = k
-				mapar[i+17][j+17].im = tile
+				mapar[i+SIZE_HALF][j+SIZE_HALF].y = k
+				mapar[i+SIZE_HALF][j+SIZE_HALF].im = tile
 			end
 		end
 
@@ -87,24 +112,24 @@ function map_handler (itemstack, user, pointed_thing)
 	pp = #p
 
 	pp = pp + 1
-	p[pp] = "size[5.2,5]"
+	p[pp] = "size[10.4,10]"
 
-	for i=1,32,1 do
-		for j=1,32,1 do
+	for i=1,SIZE_FULL,1 do
+		for j=1,SIZE_FULL,1 do
 			if mapar[i][j].y ~= mapar[i][j+1].y then mapar[i][j].im = mapar[i][j].im .. "^1black_blockt.png" end
 			if mapar[i][j].y ~= mapar[i][j-1].y then mapar[i][j].im = mapar[i][j].im .. "^1black_blockb.png" end
 			if mapar[i][j].y ~= mapar[i-1][j].y then mapar[i][j].im = mapar[i][j].im .. "^1black_blockl.png" end
 			if mapar[i][j].y ~= mapar[i+1][j].y then mapar[i][j].im = mapar[i][j].im .. "^1black_blockr.png" end
 			pp = pp + 1
-			p[pp] = "image[".. 0.15*(i) ..",".. 0.15*(32-j)+0.1 ..";0.2,0.2;" .. mapar[i][j].im .. "]"
+			p[pp] = "image[".. DRAW_SIZE1*(i) ..",".. DRAW_SIZE1*(SIZE_FULL-j)+0.1 ..";"..DRAW_SIZE2..","..DRAW_SIZE2..";" .. mapar[i][j].im .. "]"
 		end
 	end
 
 	pp = pp + 1
 	if rotate ~= 0 then
-		p[pp] = "image[".. 0.15*(16)+0.075 ..",".. 0.15*(16)-0.085 ..";0.4,0.4;d" .. yaw .. ".png^[transformFYR".. rotate .."]"
+		p[pp] = "image[".. DRAW_SIZE1*(SIZE_HALF-1)+0.075 ..",".. DRAW_SIZE1*(SIZE_HALF-1)-0.085 ..";0.4,0.4;d" .. yaw .. ".png^[transformFYR".. rotate .."]"
 	else
-		p[pp] = "image[".. 0.15*(16)+0.075 ..",".. 0.15*(16)-0.085 ..";0.4,0.4;d" .. yaw .. ".png^[transformFY]"
+		p[pp] = "image[".. DRAW_SIZE1*(SIZE_HALF-1)+0.075 ..",".. DRAW_SIZE1*(SIZE_HALF-1)-0.085 ..";0.4,0.4;d" .. yaw .. ".png^[transformFY]"
 	end
 
 	map = table.concat(p, "\n")
