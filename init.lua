@@ -1,4 +1,3 @@
-
 FACTOR     = 8;
 MAX_FACTOR = 128; -- the bigger, the more graphical glitches you get
 MIN_FACTOR = 1;
@@ -7,6 +6,15 @@ SIZE_FULL  = 2*FACTOR; --32
 SIZE_HALF  = math.ceil(SIZE_FULL/2)+1;
 DRAW_SIZE1 = 4.2/FACTOR; --0.15;
 DRAW_SIZE2 = 6.4/FACTOR;
+
+minetest.register_craft({
+	output = 'mapp:map',
+	recipe = {
+		{'default:stick', 'default:stick', 'default:stick'},
+		{'default:stick', 'default:paper', 'default:stick'},
+		{'default:stick', 'default:stick', 'default:stick'},
+	}
+})
 
 minetest.register_tool("mapp:map", {
 	description = "map",
@@ -30,6 +38,7 @@ minetest.register_tool("mapp:map", {
 			'Info: Map resolution set to '..tostring( SIZE_FULL )..'x'..tostring( SIZE_FULL )..'.');	
 	end,
 })
+
 function map_handler (itemstack, user, pointed_thing)
 		local pos = user:getpos()
 		local player_name=user:get_player_name()
